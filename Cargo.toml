@@ -1,0 +1,18 @@
+[package]
+name = "living-wave"
+version = "0.0.1"
+authors = ["₴-Origin Collective"]
+edition = "2021"
+
+[dependencies]
+# Мінімум для життя
+
+[lib]
+crate-type = ["cdylib"]
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
