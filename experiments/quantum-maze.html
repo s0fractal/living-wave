@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>⚛️ Quantum Maze - Observer Effect</title>
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            color: #f0f;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        #canvas {
+            border: 2px solid #f0f;
+            cursor: crosshair;
+            image-rendering: pixelated;
+        }
+        
+        h1 {
+            color: #f0f;
+            text-shadow: 0 0 20px #f0f;
+            animation: quantum 2s infinite;
+        }
+        
+        @keyframes quantum {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; transform: scale(1.02); }
+        }
+        
+        .quantum-state {
+            margin: 20px;
+            font-size: 18px;
+            color: #0ff;
+        }
+        
+        .superposition {
+            animation: superposition 0.5s infinite;
+        }
+        
+        @keyframes superposition {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+        
+        #info {
+            margin: 20px;
+            text-align: center;
+        }
+        
+        .collapsed { color: #0f0; }
+        .uncertain { color: #ff0; }
+        .entangled { color: #f0f; }
+    </style>
+</head>
+<body>
+    <h1>⚛️ Quantum Maze</h1>
+    <div id="info">The maze exists in superposition until observed</div>
+    
+    <canvas id="canvas" width="512" height="512"></canvas>
+    
+    <div class="quantum-state">
+        <span id="state">State: SUPERPOSITION</span> | 
+        <span id="uncertainty">Uncertainty: 100%</span> | 
+        <span id="observations">Observations: 0</span>
+    </div>
+    
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 16;
+        const cellSize = 32;
+        
+        // Quantum maze state
+        class QuantumMaze {
+            constructor() {
+                this.cells = [];
+                this.observations = 0;
+                this.uncertainty = 1.0;
+                
+                // Initialize in superposition
+                for (let y = 0; y < gridSize; y++) {
+                    this.cells[y] = [];
+                    for (let x = 0; x < gridSize; x++) {
+                        this.cells[y][x] = {
+                            state: 'superposition',
+                            probability: Math.random(),
+                            collapsed: false,
+                            entangled: [],
+                            observationTime: 0
+                        };
+                    }
+                }
+                
+                // Create quantum entanglements
+                this.createEntanglements();
+            }
+            
+            createEntanglements() {
+                // Some cells are quantum entangled
+                for (let i = 0; i < 20; i++) {
+                    const x1 = Math.floor(Math.random() * gridSize);
+                    const y1 = Math.floor(Math.random() * gridSize);
+                    const x2 = Math.floor(Math.random() * gridSize);
+                    const y2 = Math.floor(Math.random() * gridSize);
+                    
+                    if (x1 !== x2 || y1 !== y2) {
+                        this.cells[y1][x1].entangled.push({x: x2, y: y2});
+                        this.cells[y2][x2].entangled.push({x: x1, y: y1});
+                    }
+                }
+            }
+            
+            observe(x, y, radius = 3) {
+                this.observations++;
+                const time = Date.now();
+                
+                // Observation collapses wave function
+                for (let dy = -radius; dy <= radius; dy++) {
+                    for (let dx = -radius; dx <= radius; dx++) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize) {
+                            const distance = Math.sqrt(dx*dx + dy*dy);
+                            if (distance <= radius) {
+                                const cell = this.cells[ny][nx];
+                                
+                                if (!cell.collapsed) {
+                                    // Collapse probability based on distance
+                                    const collapseStrength = 1 - (distance / radius);
+                                    
+                                    if (Math.random() < collapseStrength) {
+                                        // Collapse!
+                                        cell.collapsed = true;
+                                        cell.state = cell.probability > 0.5 ? 'wall' : 'path';
+                                        cell.observationTime = time;
+                                        
+                                        // Collapse entangled pairs
+                                        cell.entangled.forEach(pair => {
+                                            const entangled = this.cells[pair.y][pair.x];
+                                            if (!entangled.collapsed) {
+                                                entangled.collapsed = true;
+                                                // Opposite state for entangled
+                                                entangled.state = cell.state === 'wall' ? 'path' : 'wall';
+                                                entangled.observationTime = time;
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Update uncertainty
+                this.updateUncertainty();
+            }
+            
+            updateUncertainty() {
+                let collapsed = 0;
+                let total = gridSize * gridSize;
+                
+                for (let y = 0; y < gridSize; y++) {
+                    for (let x = 0; x < gridSize; x++) {
+                        if (this.cells[y][x].collapsed) {
+                            collapsed++;
+                        }
+                    }
+                }
+                
+                this.uncertainty = 1 - (collapsed / total);
+            }
+            
+            decay() {
+                // Quantum states decay over time
+                const now = Date.now();
+                
+                for (let y = 0; y < gridSize; y++) {
+                    for (let x = 0; x < gridSize; x++) {
+                        const cell = this.cells[y][x];
+                        
+                        if (cell.collapsed) {
+                            const age = now - cell.observationTime;
+                            
+                            // After 5 seconds, start returning to superposition
+                            if (age > 5000) {
+                                const decayChance = (age - 5000) / 10000;
+                                if (Math.random() < decayChance * 0.01) {
+                                    cell.collapsed = false;
+                                    cell.state = 'superposition';
+                                    cell.probability = Math.random();
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                this.updateUncertainty();
+            }
+            
+            draw() {
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, 512, 512);
+                
+                for (let y = 0; y < gridSize; y++) {
+                    for (let x = 0; x < gridSize; x++) {
+                        const cell = this.cells[y][x];
+                        
+                        if (cell.collapsed) {
+                            // Collapsed state
+                            if (cell.state === 'wall') {
+                                ctx.fillStyle = '#333';
+                            } else {
+                                ctx.fillStyle = '#666';
+                            }
+                            
+                            // Fade based on age
+                            const age = Date.now() - cell.observationTime;
+                            const alpha = Math.max(0.3, 1 - (age / 10000));
+                            ctx.globalAlpha = alpha;
+                        } else {
+                            // Superposition - shimmer effect
+                            const shimmer = Math.sin(Date.now() * 0.001 + x * 0.5 + y * 0.3);
+                            const brightness = Math.floor(20 + shimmer * 10);
+                            ctx.fillStyle = `rgb(${brightness}, 0, ${brightness})`;
+                            ctx.globalAlpha = 0.5 + shimmer * 0.3;
+                        }
+                        
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize - 1, cellSize - 1);
+                        
+                        // Draw entanglement lines
+                        if (cell.entangled.length > 0 && !cell.collapsed) {
+                            ctx.strokeStyle = '#f0f';
+                            ctx.globalAlpha = 0.2;
+                            ctx.lineWidth = 1;
+                            
+                            cell.entangled.forEach(pair => {
+                                ctx.beginPath();
+                                ctx.moveTo(x * cellSize + cellSize/2, y * cellSize + cellSize/2);
+                                ctx.lineTo(pair.x * cellSize + cellSize/2, pair.y * cellSize + cellSize/2);
+                                ctx.stroke();
+                            });
+                        }
+                        
+                        ctx.globalAlpha = 1;
+                    }
+                }
+                
+                // Update UI
+                const stateText = this.uncertainty > 0.8 ? 'SUPERPOSITION' : 
+                                 this.uncertainty > 0.3 ? 'PARTIAL COLLAPSE' : 
+                                 'MOSTLY OBSERVED';
+                
+                document.getElementById('state').textContent = `State: ${stateText}`;
+                document.getElementById('state').className = 
+                    this.uncertainty > 0.8 ? 'uncertain' : 
+                    this.uncertainty > 0.3 ? 'entangled' : 'collapsed';
+                
+                document.getElementById('uncertainty').textContent = 
+                    `Uncertainty: ${Math.floor(this.uncertainty * 100)}%`;
+                document.getElementById('observations').textContent = 
+                    `Observations: ${this.observations}`;
+            }
+        }
+        
+        // Create quantum maze
+        const maze = new QuantumMaze();
+        
+        // Mouse observation
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / cellSize);
+            const y = Math.floor((e.clientY - rect.top) / cellSize);
+            
+            maze.observe(x, y, 2);
+        });
+        
+        // Click for stronger observation
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = Math.floor((e.clientX - rect.left) / cellSize);
+            const y = Math.floor((e.clientY - rect.top) / cellSize);
+            
+            maze.observe(x, y, 4);
+        });
+        
+        // Animation loop
+        function animate() {
+            maze.decay();
+            maze.draw();
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // Quantum fluctuations
+        setInterval(() => {
+            // Random quantum fluctuations
+            if (Math.random() < 0.1) {
+                const x = Math.floor(Math.random() * gridSize);
+                const y = Math.floor(Math.random() * gridSize);
+                maze.cells[y][x].probability = Math.random();
+            }
+        }, 100);
+    </script>
+</body>
+</html>
